@@ -26,6 +26,7 @@ import org.neo4j.driver.Record;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 public class Neo4J_TP {
     public static void main(String[] args) throws IOException, InterruptedException {
         String jsonPath = System.getenv("JSON_FILE");
@@ -36,6 +37,12 @@ public class Neo4J_TP {
         System.out.println("IP addresss of neo4j server is " + neo4jIP);
         int nbThreads = Runtime.getRuntime().availableProcessors();
         System.out.println("Number of threads to use is " + nbThreads);
+
+        //Execute this command sed -i 's/NumberInt(\([^)]*\))/\1/g' dblp.json to remove the NumberInt() from the json file
+        System.out.println("Removing NumberInt() from the json file ...");
+        String sedCommand = "sed -i 's/NumberInt(\\([^)]*\\))/\\1/g' " + jsonPath;
+        Process process = Runtime.getRuntime().exec(sedCommand);
+        process.waitFor();
 
         Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":7687", AuthTokens.basic("neo4j", "test"));
         boolean connected = false;

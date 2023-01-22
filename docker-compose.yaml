@@ -25,7 +25,7 @@ services:
     networks:
       - internal
     volumes:
-      - $PWD/data/dblpExample.json:/file_to_format.json
+      - $PWD/data/dblpv13.json:/file_to_format.json
     environment:
       - JSON_FILE=/file.json
       - MAX_NODES=15000

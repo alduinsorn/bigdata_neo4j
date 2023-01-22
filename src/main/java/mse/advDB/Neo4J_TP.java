@@ -38,11 +38,6 @@ public class Neo4J_TP {
         int nbThreads = Runtime.getRuntime().availableProcessors();
         System.out.println("Number of threads to use is " + nbThreads);
 
-        //Execute this command sed -i 's/NumberInt(\([^)]*\))/\1/g' dblp.json to remove the NumberInt() from the json file
-        System.out.println("Removing NumberInt() from the json file ...");
-        String sedCommand = "sed -i 's/NumberInt(\\([^)]*\\))/\\1/g' " + jsonPath;
-        Process process = Runtime.getRuntime().exec(sedCommand);
-        process.waitFor();
 
         Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":7687", AuthTokens.basic("neo4j", "test"));
         boolean connected = false;
@@ -78,16 +73,21 @@ public class Neo4J_TP {
         ObjectMapper mapper = new ObjectMapper();
 
         // Get array of articles
-        parser.nextToken();
+        JsonToken parsVal = parser.nextToken();
+        // System.out.println("first parsVal : " + parsVal.toString());
+
 
         // Iterate over the elements in the JSON array
         int parsedArticles = 0;
 
         AtomicInteger counter = new AtomicInteger(0);
-
-        while (parser.nextToken() != null && parsedArticles < nbArticles) {
+        
+        parsVal = parser.nextToken();
+        
+        while (parsVal != null && parsedArticles < nbArticles) {
             // Read the next element in the array as a JSON node
             JsonNode json = mapper.readTree(parser);
+            // System.out.println("parsVal : " + parsVal.toString());
 
             // // Print the progress every 1000 articles in percentage
             // if (parsedArticles % 999 == 0) {
@@ -107,7 +107,12 @@ public class Neo4J_TP {
             counter.incrementAndGet();
 
             parsedArticles++;
+
+            parsVal = parser.nextToken();
+            // System.out.println("end func parsVal : " + parsVal.toString());
+
         }
+
 
         System.out.println("All threads submitted.");
         System.out.println("Parsing and adding the first " + nbArticles + " articles to the database...");
@@ -136,7 +141,8 @@ public class Neo4J_TP {
     private static void parseAndInsertArticle(Session session, JsonNode json) {
         // Extract the "_id" field and create an ARTICLE node
         String articleId = json.get("_id").asText();
-        // System.out.println("Article N°" + parsedArticles + " : " + articleId);
+        // System.out.println("Article N°" + " : " + articleId);
+        // System.out.println("Article N°" + parsedArticles + " : " + json.get("_id").asText());
 
         String title = json.get("title").asText();
         session.run("MERGE (a:ARTICLE {_id: $articleId}) " +
